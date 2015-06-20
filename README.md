@@ -1,2 +1,3 @@
-# logisticregression-001
-logisticregression-001 home work
+# Home Work for the logisticregression-001 Coursera Class
+
+[logisticregression-001](https://www.coursera.org/course/logisticregression)
