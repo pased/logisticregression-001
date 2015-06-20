@@ -1,0 +1,155 @@
+---
+title: "Week 3 Home Work"
+author: "me"
+output: html_document
+---
+
+## Exercise One
+
+For this exercise, you will use the Myopia Study dataset and you will need to refer to the results from Week Two, Exercise 1. If you need the file you can download the MYOPIA.dta Stata file, or you can also access the data through the CSV file.
+
+
+Complete the following:
+
+a. Using the results from Week Two, Exercise 1, compute 95 percent confidence intervals for the slope coefficient SPHEQ. Write a sentence interpreting this confidence.
+
+b. Use Stata (or your preferred analysis software tool) to obtain the estimated covariance matrix. Then compute the logit and estimated logistic probability for a subject with SPHEQ = 2. Then evaluate the endpoints of the 95 percent confidence intervals for the logit and estimated logistic probability. Write a sentence interpreting the estimated probability and its confidence interval.
+
+### a
+
+```{r, warning=FALSE, message=FALSE}
+myopia <- read.csv("data/MYOPIA-fixed.csv")
+model1 <- glm(MYOPIC ~ SPHEQ, data = myopia, family = "binomial")
+summary(model1)
+```
+
+```{r, warning=FALSE, message=FALSE}
+model1_CI <- confint(model1, "SPHEQ", level = 0.95)  # Compute 95% CI for SPHEQ slope
+model1_CI
+confint.default(model1, "SPHEQ", level = 0.95)
+summary(model1)$coefficients[2,1] + c(-1.96, 1.96) * summary(model1)$coefficients[2,2]
+```
+
+**If we keep sampling and calculate 100 such intervals in the same way, approximately 95 of them will cover the true
+value of ß1 . Alternatively, we are 95% confident that true value of ß1 could be as low as `r model1_CI[1]`, or as high as `r model1_CI[2]`.**
+
+### b
+
+```{r, warning=FALSE, message=FALSE}
+vcov(model1)  # Gives variance-covariance matrix for the model
+```
+
+```{r, warning=FALSE, message=FALSE}
+# Logit for SPHEQ = 2
+logit <- predict(model1, newdata=data.frame(SPHEQ=2), type="link", se.fit=TRUE)
+logit
+```
+
+```{r, warning=FALSE, message=FALSE}
+# 95% CI for the logit
+logit_ci <- logit$fit + c(-1.96, 1.96) * logit$se.fit
+logit_ci
+```
+
+```{r, warning=FALSE, message=FALSE}
+# Probability for the subject with SPHEQ = 2
+model1_pred <- predict(model1, newdata = data.frame(SPHEQ = 2), type = "response")
+predict(model1, newdata = data.frame(SPHEQ = 2), type = "response")
+
+# 95% CI for the probability
+model1$family$linkinv(logit_ci[1]) # the lower bound
+model1$family$linkinv(logit_ci[2]) # the upper bound
+```
+
+**The estimated probability of having myopia for a spherical equivalent refraction score of 2 is `r model1_pred * 100`% on average,
+and we are 95% confident that this probability could be as low as `r model1$family$linkinv(logit_ci[1]) * 100`% and as high as `r model1$family$linkinv(logit_ci[2]) * 100`%.**
+
+## Exercise Two
+
+For this exercise, you will use the ICU Study dataset and you will need to refer to the results from Week One, Exercise 2, Part (d). If you need the file you can download the icu.dta Stata file, or you can also access the data through the CSV file.
+
+a. Using the results from Week One, Exercise 2, Part (d), compute 95 percent confidence intervals for the slope and constant term. Write a sentence interpreting the confidence interval for the slope.
+
+b. Obtain the estimated covariance matrix for the model fit from Week One, Exercise 2, Part (d). Then compute the logit and estimated logistic probability for a 60-year old subject. Then compute a 95 percent confidence intervals for the logit and estimated logistic probability. Write a sentence or two interpreting the estimated probability and its confidence interval.
+
+### a
+
+```{r, warning=FALSE, message=FALSE}
+icu_data <- read.csv("data/icu.csv")
+model2 <- glm(STA ~ AGE, data = icu_data, family = "binomial")
+summary(model2)
+```
+
+```{r, warning=FALSE, message=FALSE}
+# 95% CI for the slope and intercept
+model2_CI <- confint.default(model2)
+model2_CI
+```
+
+**We are 95% confident that the true intercept could be as low as `r model2_CI[1,1]` and as high as `r model2_CI[1,2]`. We are 95% confident that the true slope could be as low as `r model2_CI[2,1]` and as high as `r model2_CI[2,2]`.**
+
+*The 95% confidence interval for the slope suggests that the change in the log odds of dying in the ICU (STA=1) per
+one year increase in AGE is 0.0275 and the change could be as little as 0.0068 or as much as 0.0482 with 95%
+confidence.*
+
+### b
+
+```{r, warning=FALSE, message=FALSE}
+vcov(model2)  # Gives variance-covariance matrix for the model
+```
+
+```{r, warning=FALSE, message=FALSE}
+# Logit for the subject with AGE = 60
+logit <- predict(model2, newdata=data.frame(AGE=60), type="link", se.fit=TRUE)
+logit
+
+# 95% CI for the logit
+logit_ci <- logit$fit + c(-1.96, 1.96) * logit$se.fit
+logit_ci
+
+# Probability for the subject with AGE = 60
+model2_pred <- predict(model2, newdata = data.frame(AGE = 60), type = "response")
+model2_pred
+
+# 95% CI for the probability
+model2$family$linkinv(logit_ci[1]) # the lower bound
+model2$family$linkinv(logit_ci[2]) # the upper bound
+```
+
+**The estimated probability of having STA for a 60 years old person is `r model2_pred * 100`% on average,
+and we are 95% confident that this probability could be as low as `r model2$family$linkinv(logit_ci[1]) * 100`% and as high as `r model2$family$linkinv(logit_ci[2]) * 100`%.**
+
+*The  estimated	logistic	probability	of	dying	in	the	ICU	for	a	60	year	old	subject,	0.1969,	is	an	estimate	of	the	proportion	
+of	60	year	old	subjects	in	the	population	sampled	that	die	in	the	ICU.		The	confidence	interval	suggests	that	this	mean	
+could	be	as	low	as	0.1450	or	as	high	as	0.2616	with	95%	confidence.*
+
+## Exercise Three
+
+First, using the ICU data, consider the multiple logistic regression model of vital status, STA, on age (AGE), cancer part of the present problem (CAN), CPR prior to ICU admission (CPR), infection probable at ICU admission (INF), and race (RACE).
+
+Then, complete the following:
+
+a. The variable RACE is coded at three levels. Prepare a table showing the coding of the two design variables necessary for including this variable in a logistic regression model.
+b. Write down the equation for the logistic regression model of STA on AGE, CAN, CPR, INF, and RACE. Write down the equation for the logit transformation of this logistic regression model. How many parameters does this model contain?
+c. Write down an expression for the likelihood and log likelihood for the logistic regression model in part (b). How many likelihood equations are there? Write down an expression for a typical likelihood equation for this problem.
+d. Using a logistic regression package, obtain the maximum likelihood estimates of the parameters of the logistic regression model in part (b). Using these estimates write down the equation for the fitted values, that is, the estimated logistic probabilities.
+e. Using the results of the output from the logistic regression package used in part (d), assess the significance of the slope coefficients for the variables in the model using the likelihood ratio test. What assumptions are needed for the p-values computed for this test to be valid? What is the value of the deviance for the fitted model?
+f. Use the Wald statistics to obtain an approximation to the significance of the individual slope coefficients for the variables in the model. Fit a reduced model that eliminates those variables with nonsignificant Wald statistics. Assess the joint (conditional) significance of the variables excluded from the model. Present the results of fitting the reduced model in a table.
+g. Using the results from part (f), compute 95 percent confidence intervals for all coefficients in the model. Write a sentence interpreting the confidence intervals for the non-constant covariates.
+
+### a
+
+```{r, warning=FALSE, message=FALSE}
+icu_data$CAN <- as.factor(icu_data$CAN)
+icu_data$CPR <- as.factor(icu_data$CPR)
+icu_data$INF <- as.factor(icu_data$INF)
+icu_data$RACE <- as.factor(icu_data$RACE)
+
+dummies <- contrasts(icu_data$RACE) # R codes this way by default when we run our model
+colnames(dummies) <- c("RACE2", "RACE3")
+rownames(dummies) <- c("white", "black", "other")
+dummies
+
+model3 <- glm(STA ~ AGE + CAN + CPR + INF + RACE, data=icu_data, family = "binomial")
+```
+
