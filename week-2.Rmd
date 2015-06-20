@@ -1,0 +1,26 @@
+---
+title: "Week 2 Home Work"
+author: "me"
+output: html_document
+---
+
+## Exercise One
+
+Using the results of the output from Stata, assess the significance of the slope coefficient for SPHEQ using the likelihood ratio test and the Wald test. 
+What assumptions are needed for the p-values computed for each of these tests to be valid? Are the results of these tests consistent with one another? What is the value of the deviance for the fitted model?
+
+```{r, warning=FALSE, message=FALSE}
+myopia <- read.csv("data/MYOPIA-fixed.csv")
+model1 <- glm(MYOPIC ~ SPHEQ, data = myopia, family = "binomial")
+summary(model1)
+
+library(lmtest)  # Likelihood ratio test
+lrtest(model1)
+
+# Wald test for SPHEQ
+summary(model1)$coefficient[2,3]  # W or z value in the summary output
+summary(model1)$coefficient[2,4]  # And the corresponding p value
+
+# The value of the deviance for the fitted model
+summary(model1)$deviance
+```
