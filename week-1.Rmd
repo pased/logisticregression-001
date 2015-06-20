@@ -1,0 +1,40 @@
+---
+title: "Week 1 Home Work"
+author: "me"
+output: html_document
+---
+
+
+
+```{r}
+library(ggplot2)
+myopia <- read.csv("data/MYOPIA-fixed.csv")
+
+plot1 <- ggplot(myopia, aes(factor(MYOPIC), SPHEQ)) +
+  geom_boxplot()
+plot1
+```
+
+
+
+```{r}
+model1 <- glm(MYOPIC ~ SPHEQ, data = myopia, family = "binomial")
+summary(model1)
+```
+
+```{r}
+plot2 <- ggplot(myopia, aes(factor(MYOPIC), model1$fitted.values)) +
+  geom_boxplot()
+plot2
+```
+
+```{r}
+plot1 + geom_boxplot(myopia, aes(factor(MYIOPIC), model1$fitted.values))
+```
+
+```{r}
+qplot(y=myopia$MYOPIC, myopia$SPHEQ) +
+  geom_smooth(method="glm", family="binomial", se=FALSE, 
+              color="red", lwd=1)
+```
+
