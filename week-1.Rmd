@@ -68,3 +68,78 @@ c. Write down an expression for the likelihood and log likelihood for the logist
 d. Using Stata, obtain the maximum likelihood estimates of the parameters of the logistic regression model in part (A). These estimates should be based on the ungrouped, n=200, data. Using these estimates, write down the equation for the fitted values, that is, the estimated logistic probabilities. Plot the equation for the fitted values on the axes used in the scatterplots in part (B).
 
 e. Summarize (describe in words) the results presented in the plot obtained from parts (B) and (D).
+
+### A
+
+Logistic regression model:
+
+$$ \pi(AGE) = {e^{\beta_{0} + \beta_{1}AGE} \over 1 + e^{\beta_{0} + \beta_{1}AGE}}  $$
+
+Logit transformation:
+
+$$ g(AGE) = \beta_{0} + \beta_{1}(AGE) $$
+
+>We consider the logistic regression model, rather than the usual linear regression model
+>to describe the relationship between STA and AGE because the outcome variable, STA, is
+>dichotomous, taking on the values 0 and 1.
+
+### B
+
+```{r}
+data_icu <- read.csv("data/icu.csv")
+
+plot1 <- ggplot(data_icu, aes(y = factor(STA), x = AGE)) +
+  geom_point()
+plot1
+```
+
+### C
+
+likelihood function:
+
+$\ell(\beta) = \prod_{i=1}^n \zeta(X_{i})$ where, $\zeta(X_{i}) = \pi(X_{i})^{y_{i}}[1 - \pi(X_{i})]^{1 - y_{i}}$
+
+$X = AGE$ and $y_{i} =
+  \begin{cases}
+    0       & \quad \text{if the patient lived}\\
+    1  & \quad \text{if the patient died}\\
+  \end{cases}$
+  
+log likelihood function:
+
+$$ L(\beta) = ln(\ell(\beta)) $$
+
+### D
+
+```{r}
+icu_model <- glm(STA ~ AGE, data = data_icu, family = "binomial")
+summary(icu_model)
+```
+
+log likelihood:
+
+```{r}
+logLik(icu_model)
+```
+
+
+log likelihood ratio:
+
+```{r}
+icu_model$null.deviance - icu_model$deviance
+```
+
+```{r}
+qplot(y = STA, x = AGE, data = data_icu) + 
+  geom_smooth(method="glm", family="binomial", se=FALSE, 
+              color="red")
+```
+
+>The plot of STA vs. AGE (indicated in the scatterplot in 1(b)) demonstrates the dichotomous nature
+>of the STA variable, which takes on the value zero if a patient is discharged alive or the value one if
+>the patient died prior to discharge. The plot suggests that older people are more likely to die in the
+>ICU, although overall, people are more likely to live than to die.
+>
+>The plot of the estimated logistic probabilities vs. AGE (in Exercise 1(d)) indicates that the
+>probability of dying does increase with increasing age. The rate of increase in the probabilities
+>seems to increase with increasing age.
